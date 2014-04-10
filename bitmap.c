@@ -12,28 +12,53 @@ typedef struct bitmap_tag{
     int size;
 } bitmap;
 
-/* to update it according to Unix standard (ISO C) */
-static const int CHAR_BYTE_NUM = sizeof(char);
-static const int CHAR_BIT_NUM = sizeof(char) * 8;
-
-/* init a bitmap whose bits num is SIZE*/
-pbitmap bitmap_init(int size){
+ 
+/* init a bitmap whose size is BIT_NUM */
+pbitmap bitmap_create(int bit_num){
     pbitmap p = (pbitmap)malloc(sizeof(bitmap));
-    p->bits = malloc( CHAR_BYTE_NUM * ((size-1)/CHAR_BIT_NUM + 1));
-    p->size = size;
-    
+    p->bits = malloc((bit_num-1)/8 + 1);
+    p->size = bit_num;
+
+    bitmap_reset(p);
     return p;
 }
 
+
+/* reset the bitmap which is referenced by paramater p */
+void bitmap_reset(pbitmap p){
+    if (p == NULL)
+	return;
+
+    byte_num = (p->size-1)/8 + 1;
+    for (int i = 0; i < byte_num; i++)
+	p->bits[i] = 0x00;
+}
+
+
 /* get the k-th bit, k count from zero */
 int bitmap_get(pbitmap p, int k){
-    int k_char = k / CHAR_BIT_NUM;
-    int k_bit = k %  CHAR_BIT_NUM;
+    if (p == NULL || p->size <= k)
+	return -1;
+    
+    int k_byte = k / 8; /* the bit in which byte */
+    int k_bit = k %  8; /* the bit in which bit of the byte*/
 
-    int bit = p->bits[k_char] & ((unsighned char)1 << (CHAR_BIT_NUM - k_bit));
+    int bit = p->bits[k_byte] & ((unsighned char)1 << (8 - 1 - k_bit));
     return bit;
 }
 
+
+/* set the k-th bit, k count from zero */
+void bitmap_set(pbitmap p, int k){
+    if (p == NULL || p->size <= k)
+	return -1;
+    
+    int k_byte = k / 8; /* the bit in which byte */
+    int k_bit = k %  8; /* the bit in which bit of the byte*/
+
+    int bit = p->bits[k_byte] | ((unsighned char)1 << (8 - 1 - k_bit));
+    return bit;
+}
 
 
 int main(int argc, char *argv[]){
